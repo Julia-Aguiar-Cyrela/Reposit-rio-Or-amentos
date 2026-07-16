@@ -1,0 +1,965 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Repositório de Orçamentos</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red: #E53935; --red-light: #FFEBEE; --red-mid: #FFCDD2;
+  --text: #111827; --muted: #6B7280; --border: #E5E7EB;
+  --bg: #F9FAFB; --card: #FFFFFF; --sidebar-w: 56px;
+  --radius: 8px;
+}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;}
+.login-card{width:100%;max-width:380px;padding:40px 36px;}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.login-logo-box{width:32px;height:32px;background:var(--red);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.login-logo-text{font-size:15px;font-weight:700;color:var(--text);}
+.login-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.fg label{font-size:12.5px;font-weight:600;}
+.fg input,.fg select,.fg textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;outline:none;transition:border .18s;background:#fff;color:var(--text);font-family:inherit;resize:vertical;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--red);}
+.fg-hint{font-size:11.5px;color:var(--muted);}
+.login-error{background:var(--red-light);color:#B71C1C;border:1px solid var(--red-mid);border-radius:6px;padding:9px 12px;font-size:12.5px;display:none;margin-bottom:10px;}
+.login-error.show{display:block;}
+.btn-login{width:100%;background:var(--red);color:#fff;border:none;border-radius:var(--radius);padding:11px;font-size:14px;font-weight:600;cursor:pointer;transition:background .18s;margin-top:4px;}
+.btn-login:hover{background:#C62828;}
+.btn-login:disabled{opacity:.65;cursor:not-allowed;}
+.login-forgot{text-align:center;margin-top:14px;font-size:12.5px;}
+.login-forgot a{color:var(--red);text-decoration:none;font-weight:500;}
+.login-divider{border:none;border-top:1px solid var(--border);margin:24px 0;}
+
+/* APP */
+#app{display:none;height:100vh;overflow:hidden;}
+.app-layout{display:flex;height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:6px;flex-shrink:0;}
+.sidebar-logo{width:32px;height:32px;background:var(--red);border-radius:7px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;cursor:pointer;}
+.sidebar-btn{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;color:var(--muted);border:none;background:transparent;}
+.sidebar-btn:hover{background:var(--bg);color:var(--text);}
+.sidebar-btn.active{background:var(--red-light);color:var(--red);}
+.sidebar-spacer{flex:1;}
+
+/* MAIN */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{height:52px;border-bottom:1px solid var(--border);background:#fff;display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;}
+.topbar-title{font-size:14px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-search{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:7px 14px;min-width:240px;transition:border .18s;}
+.topbar-search:focus-within{border-color:#D1D5DB;}
+.topbar-search input{background:transparent;border:none;outline:none;font-size:13px;color:var(--text);width:100%;}
+.topbar-search input::placeholder{color:var(--muted);}
+.kbd{background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px;color:var(--muted);font-family:monospace;flex-shrink:0;}
+.user-pill-wrap{position:relative;}
+.user-pill{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 10px;border-radius:var(--radius);transition:background .15s;}
+.user-pill:hover{background:var(--bg);}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:500;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-dropdown{display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--border);border-radius:10px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:300;overflow:hidden;}
+.user-dropdown.open{display:block;}
+.user-dropdown-header{padding:12px 14px;border-bottom:1px solid var(--border);}
+.user-dropdown-name{font-size:13px;font-weight:600;}
+.user-dropdown-email{font-size:11.5px;color:var(--muted);margin-top:2px;word-break:break-all;}
+.user-dropdown-item{padding:9px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;color:var(--text);}
+.user-dropdown-item:hover{background:var(--bg);}
+.user-dropdown-item.logout{color:#DC2626;}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:24px 28px;}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.page-header h1{font-size:18px;font-weight:700;}
+.page-header-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:#C62828;}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{background:var(--bg);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--bg);}
+.btn-danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA;}
+.btn-danger:hover{background:#FEE2E2;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-icon{padding:6px;border-radius:6px;background:transparent;border:none;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;transition:all .15s;}
+.btn-icon:hover{background:var(--bg);color:var(--text);}
+.btn-icon.del:hover{background:#FEF2F2;color:#DC2626;}
+.btn-icon.edit:hover{background:#FFF7ED;color:#D97706;}
+.btn-icon.view-ic:hover{background:#EFF6FF;color:#2563EB;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+.badge-cyrela{background:#FBF5DC;color:#8A6A00;border:1px solid #E8D48A;}
+.badge-vivaz {background:#F5F0FF;color:#7C3AED;border:1px solid #DDD6FE;}
+.badge-living{background:#F5EDE4;color:#6B4A28;border:1px solid #D4B896;}
+
+/* FILTERS */
+.filters-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.brand-lbl{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;}
+.brand-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:var(--muted);white-space:nowrap;}
+.brand-btn:hover{border-color:#D1D5DB;color:var(--text);}
+.brand-btn.active-cyrela{background:#FBF5DC;color:#8A6A00;border-color:#E8D48A;}
+.brand-btn.active-vivaz {background:#F5F0FF;color:#7C3AED;border-color:#DDD6FE;}
+.brand-btn.active-living{background:#F5EDE4;color:#6B4A28;border-color:#D4B896;}
+.filters-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+.standard-wrap{position:relative;}
+.standard-wrap input{padding:5px 12px 5px 30px;border:1.5px solid var(--border);border-radius:20px;font-size:12px;outline:none;background:#fff;color:var(--text);transition:border .18s;width:200px;}
+.standard-wrap input:focus{border-color:var(--red);}
+.standard-wrap .ico-std{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.filter-count{font-size:12px;color:var(--muted);white-space:nowrap;margin-left:auto;}
+.clear-filters{font-size:12px;color:var(--red);cursor:pointer;font-weight:500;text-decoration:none;white-space:nowrap;}
+.clear-filters:hover{text-decoration:underline;}
+
+/* TABLE */
+.table-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:#FAFAFA;}
+th{padding:10px 16px;text-align:left;font-size:11.5px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:12px 16px;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tbody tr{cursor:pointer;transition:background .1s;}
+tbody tr:hover td{background:#FAFAFA;}
+.td-name{font-weight:600;color:var(--text);}
+.td-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.td-actions{display:flex;align-items:center;gap:4px;}
+.no-data{text-align:center;padding:48px 24px;color:var(--muted);font-size:13.5px;}
+
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:18px;font-size:13px;color:var(--muted);}
+.breadcrumb a{color:var(--red);text-decoration:none;font-weight:500;}
+.breadcrumb a:hover{text-decoration:underline;}
+
+/* DETAIL BANNER */
+.detail-banner{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;border-left:4px solid #C9A84C;}
+.detail-banner[data-brand="vivaz"]{border-left-color:#7C3AED;}
+.detail-banner[data-brand="living"]{border-left-color:#BEA07D;}
+.detail-banner h2{font-size:17px;font-weight:700;margin-bottom:8px;}
+.detail-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.detail-meta-item{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);}
+
+/* SEARCH */
+.search-banner{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;}
+.search-banner h2{font-size:16px;font-weight:700;margin-bottom:12px;}
+.search-big-wrap{position:relative;}
+.search-big-wrap input{width:100%;padding:10px 16px 10px 42px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;outline:none;background:var(--bg);color:var(--text);transition:border .18s;}
+.search-big-wrap input:focus{border-color:var(--red);background:#fff;}
+.search-big-wrap .ico-big{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);}
+.result-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:12px;color:var(--muted);cursor:pointer;}
+.result-chip:hover{background:#EFF6FF;color:#2563EB;border-color:#BFDBFE;}
+.inline-search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:7px 12px;max-width:340px;}
+.inline-search-box input{border:none;outline:none;font-size:13px;color:var(--text);width:100%;background:transparent;}
+.inline-search-box input::placeholder{color:var(--muted);}
+
+/* PDF */
+.pdf-cell{display:flex;align-items:center;gap:10px;}
+.pdf-thumb{width:26px;height:32px;background:var(--red-light);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.15);width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{transform:translateY(16px);opacity:0;}to{transform:none;opacity:1;}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--border);}
+.modal-header h3{font-size:15px;font-weight:700;}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:flex;}
+.modal-close:hover{background:var(--bg);color:var(--text);}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.file-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .18s;background:var(--bg);}
+.file-drop:hover,.file-drop.drag-over{border-color:var(--red);background:var(--red-light);}
+.file-drop input[type="file"]{display:none;}
+.file-drop p{font-size:12.5px;color:var(--muted);margin-top:6px;}
+.file-drop .file-name{color:var(--red);font-weight:600;font-size:12.5px;margin-top:4px;word-break:break-all;}
+.current-file-info{display:flex;align-items:center;gap:8px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;padding:8px 12px;font-size:12.5px;color:#166534;}
+.pdf-modal{max-width:900px;width:100%;height:90vh;display:flex;flex-direction:column;}
+.pdf-modal .modal-body{flex:1;padding:0;overflow:hidden;}
+.pdf-modal iframe{width:100%;height:100%;border:none;display:block;}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;}
+.loading-overlay.show{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .65s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{font-size:13px;color:var(--muted);}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#111827;color:#F9FAFB;padding:11px 16px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:9px;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:toastIn .2s ease;min-width:200px;}
+@keyframes toastIn{from{transform:translateX(32px);opacity:0;}to{transform:none;opacity:1;}}
+.toast.success{border-left:4px solid #22C55E;}
+.toast.error{border-left:4px solid #EF4444;}
+.toast.info{border-left:4px solid #3B82F6;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-box">
+        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <span class="login-logo-text">Repositório de Orçamentos</span>
+    </div>
+    <h2 class="login-title">Entrar</h2>
+    <p class="login-sub">Acesse com seu e-mail e senha cadastrados.</p>
+    <hr class="login-divider"/>
+    <div class="fg"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"/></div>
+    <div class="fg"><label>Senha</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/></div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-login" id="login-btn" onclick="handleLogin()">Entrar</button>
+    <div class="login-forgot"><a href="#" onclick="handleForgotPassword();return false;">Esqueci minha senha</a></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo" onclick="showView('projects')" title="Repositório de Orçamentos">
+        <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <button class="sidebar-btn active" id="sb-home" title="Projetos" onclick="showView('projects')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <div class="sidebar-spacer"></div>
+    </aside>
+
+    <div class="main-area">
+      <div class="topbar">
+        <span class="topbar-title" id="topbar-title">Repositório de Orçamentos</span>
+        <div class="topbar-search">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="global-search" placeholder="Pesquisar orçamentos…" autocomplete="off" onkeydown="handleGlobalKey(event)"/>
+          <span class="kbd">Enter</span>
+        </div>
+        <div class="user-pill-wrap" id="user-pill-wrap">
+          <div class="user-pill" onclick="toggleUserDD()">
+            <div class="user-avatar" id="user-avatar">?</div>
+            <span class="user-name" id="user-name-display">Usuário</span>
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-name" id="dd-name">—</div>
+              <div class="user-dropdown-email" id="dd-email">—</div>
+            </div>
+            <div class="user-dropdown-item logout" onclick="handleLogout()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sair
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content" id="main-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Projeto -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-project-title">Novo Projeto</h3>
+      <button class="modal-close" onclick="closeModal('modal-project')"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="project-edit-id"/>
+      <div class="fg"><label>Nome do Projeto *</label><input type="text" id="project-name" placeholder="Ex.: Residencial Vila Nova — Torre A"/></div>
+      <div class="fg"><label>Marca *</label>
+        <select id="project-brand">
+          <option value="">Selecione…</option>
+          <option value="cyrela">Cyrela</option>
+          <option value="vivaz">Vivaz</option>
+          <option value="living">Living</option>
+        </select>
+      </div>
+      <div class="fg"><label>Padrão de Acabamento *</label><input type="text" id="project-standard" placeholder="Ex.: Alto Padrão, Standard, Econômico…"/></div>
+      <div class="fg"><label>Descrição (opcional)</label><textarea id="project-desc" rows="2" placeholder="Observações adicionais…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-project')">Cancelar</button>
+      <button class="btn btn-red" onclick="saveProject()">Salvar Projeto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Orçamento -->
+<div class="modal-overlay" id="modal-budget">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-budget-title">Adicionar Orçamento</h3>
+      <button class="modal-close" onclick="closeModal('modal-budget')"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="budget-edit-id"/>
+      <div class="fg"><label>Título do Orçamento *</label><input type="text" id="budget-title" placeholder="Ex.: Peitoril Mármore Branco"/><span class="fg-hint">Usado na pesquisa — seja descritivo.</span></div>
+      <div class="fg"><label>Data do Orçamento *</label><input type="date" id="budget-date"/></div>
+      <div class="fg"><label>Observações (opcional)</label><textarea id="budget-obs" rows="3" placeholder="Ex.: Inclui instalação, válido 30 dias…"></textarea></div>
+      <div class="fg">
+        <label id="pdf-label">Arquivo PDF *</label>
+        <div id="current-file-wrap" style="display:none;" class="current-file-info">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span id="current-file-name"></span><span style="color:#6B7280;font-size:11.5px;">(manter atual)</span>
+        </div>
+        <div class="file-drop" id="file-drop-zone" onclick="document.getElementById('budget-file').click()">
+          <input type="file" id="budget-file" accept="application/pdf" onchange="handleFileSelect(this)"/>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#E53935" stroke-width="1.4"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p id="file-drop-text">Clique ou arraste um PDF aqui</p>
+          <div class="file-name" id="file-name-display"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-budget')">Cancelar</button>
+      <button class="btn btn-red" onclick="saveBudget()">Salvar Orçamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal PDF -->
+<div class="modal-overlay" id="modal-pdf">
+  <div class="modal pdf-modal">
+    <div class="modal-header">
+      <h3 id="pdf-modal-title">Visualizar PDF</h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-outline btn-sm" id="pdf-download-btn">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Baixar
+        </button>
+        <button class="modal-close" onclick="closePdfModal()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+    </div>
+    <div class="modal-body"><iframe id="pdf-frame" title="PDF"></iframe></div>
+  </div>
+</div>
+
+<!-- Modal Confirmar -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <h3>Confirmar Exclusão</h3>
+      <button class="modal-close" onclick="closeModal('modal-confirm')"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body"><p id="confirm-message" style="font-size:13.5px;color:var(--muted);line-height:1.6;"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-action-btn">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p class="loading-msg" id="loading-msg">Carregando…</p>
+</div>
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ── SUPABASE ── */
+const SUPABASE_URL = 'https://mdkbgdkwsuejuxrwmxiu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ka2JnZGt3c3VlanV4cndteGl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNDQ5MDksImV4cCI6MjA5OTYyMDkwOX0.6YeeYsxI9n7XGr0wHSIwuu82RSqMqEkhZm1QC3X4PRY';
+const BUCKET = 'orcamentos-pdfs';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ── STATE ── */
+let currentUser = null, currentView = 'projects', currentProject = null;
+let currentSearchQ = '', selectedFile = null, currentPdfUrl = null;
+let allProjects = [], allBudgets = [];
+let fProjBrand = '', fProjStandard = '';
+let fBudgetText = '';
+let fSrchBrand = '', fSrchStandard = '';
+
+/* ── UTILS ── */
+function fmtDate(iso){ if(!iso)return'—'; const[y,m,d]=iso.split('-'); return`${d}/${m}/${y}`; }
+function fmtDatetime(ts){ const d=new Date(ts); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function brandLabel(b){ return{cyrela:'Cyrela',vivaz:'Vivaz',living:'Living'}[b]||b; }
+function brandBadge(b){ const c={cyrela:'badge-cyrela',vivaz:'badge-vivaz',living:'badge-living'}; return`<span class="badge ${c[b]||''}">${brandLabel(b)}</span>`; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function highlight(t,q){ if(!q)return esc(t); const s=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); return esc(t).replace(new RegExp(`(${s})`,'gi'),'<mark class="highlight">$1</mark>'); }
+function matchBudget(b,q){ if(!q)return true; const l=q.toLowerCase(); return b.title.toLowerCase().includes(l)||(b.obs||'').toLowerCase().includes(l); }
+function matchProject(p,brand,standard){
+  if(brand && p.brand!==brand) return false;
+  if(standard && !p.standard.toLowerCase().includes(standard.toLowerCase())) return false;
+  return true;
+}
+function countBudgets(pid){ return allBudgets.filter(b=>b.project_id===pid).length; }
+function userInitials(e){ return(e||'?').substring(0,2).toUpperCase(); }
+function pdfThumb(){ return`<div class="pdf-thumb"><svg width="13" height="13" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#FFCDD2" stroke="#E53935" stroke-width="1.5"/><polyline points="14 2 14 8 20 8" stroke="#E53935" stroke-width="1.5"/></svg></div>`; }
+
+/* ── LOADING / TOAST / MODAL ── */
+function showLoading(msg='Carregando…'){ document.getElementById('loading-msg').textContent=msg; document.getElementById('loading-overlay').classList.add('show'); }
+function hideLoading(){ document.getElementById('loading-overlay').classList.remove('show'); }
+function toast(msg,type='success'){
+  const ic={success:'<path d="M20 6 9 17l-5-5"/>',error:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>'};
+  const co={success:'#22C55E',error:'#EF4444',info:'#3B82F6'};
+  const c=document.getElementById('toast-container'); const t=document.createElement('div');
+  t.className=`toast ${type}`; t.innerHTML=`<svg width="15" height="15" fill="none" stroke="${co[type]}" stroke-width="2.5" viewBox="0 0 24 24">${ic[type]}</svg>${esc(msg)}`;
+  c.appendChild(t); setTimeout(()=>t.remove(),3500);
+}
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o)closeModal(o.id); }));
+
+/* ── AUTH ── */
+db.auth.onAuthStateChange((ev, session) => {
+  if (session?.user) { currentUser = session.user; showApp(); }
+  else { currentUser = null; showLoginScreen(); }
+});
+
+function showLoginScreen(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function showApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const email = currentUser.email || '';
+  const name = email.split('@')[0];
+  document.getElementById('user-avatar').textContent = userInitials(email);
+  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('dd-name').textContent = name;
+  document.getElementById('dd-email').textContent = email;
+  await loadAllData();
+  showView('projects');
+}
+
+async function handleLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pwd   = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.classList.remove('show');
+  if(!email || !pwd){ errEl.textContent='Preencha e-mail e senha.'; errEl.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  try {
+    const { error } = await db.auth.signInWithPassword({ email, password: pwd });
+    if(error){ errEl.textContent='E-mail ou senha incorretos.'; errEl.classList.add('show'); }
+  } catch(e) {
+    errEl.textContent = 'Erro de conexão. Tente novamente.'; errEl.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+
+async function handleForgotPassword(){
+  const email = document.getElementById('login-email').value.trim();
+  if(!email){ const e=document.getElementById('login-error'); e.textContent='Informe seu e-mail acima.'; e.classList.add('show'); return; }
+  const { error } = await db.auth.resetPasswordForEmail(email);
+  if(!error) toast('E-mail de redefinição enviado!','info'); else toast('Não foi possível enviar.','error');
+}
+
+async function handleLogout(){ await db.auth.signOut(); document.getElementById('user-dropdown').classList.remove('open'); }
+function toggleUserDD(){ document.getElementById('user-dropdown').classList.toggle('open'); }
+document.addEventListener('click', e => { if(!document.getElementById('user-pill-wrap').contains(e.target)) document.getElementById('user-dropdown').classList.remove('open'); });
+
+/* ── DATA ── */
+async function loadAllData(){
+  showLoading();
+  try{
+    const [pr,br] = await Promise.all([
+      db.from('projects').select('*').order('created_at',{ascending:false}),
+      db.from('budgets').select('*').order('created_at',{ascending:false})
+    ]);
+    if(pr.error) throw pr.error;
+    if(br.error) throw br.error;
+    allProjects = pr.data || [];
+    allBudgets  = br.data || [];
+  } catch(e){ toast('Erro ao carregar: '+e.message,'error'); }
+  finally{ hideLoading(); }
+}
+
+/* ── ROUTER ── */
+function showView(view, arg){
+  currentView = view;
+  document.getElementById('sb-home').classList.toggle('active', view==='projects'||view==='project-detail');
+  if(view==='projects'){
+    currentProject = null;
+    document.getElementById('topbar-title').textContent = 'Repositório de Orçamentos';
+    fProjBrand=''; fProjStandard='';
+    renderProjectsView();
+  } else if(view==='project-detail'){
+    currentProject = allProjects.find(p=>p.id===arg);
+    document.getElementById('topbar-title').textContent = currentProject?.name || 'Projeto';
+    fBudgetText='';
+    renderDetailView();
+  } else if(view==='search'){
+    currentSearchQ = arg||'';
+    document.getElementById('topbar-title').textContent = 'Resultados da Pesquisa';
+    fSrchBrand=''; fSrchStandard='';
+    renderSearchView(currentSearchQ);
+  }
+}
+
+function handleGlobalKey(e){
+  if(e.key==='Enter'){ const q=document.getElementById('global-search').value.trim(); if(q) showView('search',q); }
+}
+
+/* ── BRAND BUTTONS ── */
+function brandBarHTML(activeBrand, toggleFn){
+  return ['cyrela','vivaz','living'].map(b=>
+    `<button class="brand-btn ${activeBrand===b?'active-'+b:''}" onclick="${toggleFn}('${b}')">${brandLabel(b)}</button>`
+  ).join('');
+}
+
+/* ══════════════════════════════
+   PROJECTS VIEW
+══════════════════════════════ */
+function renderProjectsView(){
+  const el = document.getElementById('main-content');
+  el.innerHTML = `
+    <div class="page-header">
+      <div><h1>Projetos</h1><div class="page-header-sub" id="proj-sub"></div></div>
+      <button class="btn btn-red" onclick="openNewProject()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>+ Novo
+      </button>
+    </div>
+    <div class="filters-bar">
+      <span class="brand-lbl">Marca:</span>
+      <div id="proj-brand-btns"></div>
+      <div class="filters-divider"></div>
+      <div class="standard-wrap">
+        <svg class="ico-std" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <input type="text" id="proj-std-inp" placeholder="Padrão de acabamento…"/>
+      </div>
+      <a class="clear-filters" id="proj-clear" href="#" style="display:none" onclick="clearProjFilters();return false;">Limpar filtros</a>
+      <span class="filter-count" id="proj-count"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nome</th><th>Marca</th><th>Padrão</th><th>Orçamentos</th><th>Criado em</th><th>Ações</th></tr></thead>
+        <tbody id="proj-tbody"></tbody>
+      </table>
+    </div>`;
+
+  // Listener no input de padrão — sem recriar o DOM
+  const stdInp = document.getElementById('proj-std-inp');
+  stdInp.value = fProjStandard;
+  stdInp.addEventListener('input', function(){ fProjStandard = this.value; refreshProjTable(); });
+
+  refreshProjBrandBtns();
+  refreshProjTable();
+}
+
+function refreshProjBrandBtns(){
+  const el = document.getElementById('proj-brand-btns'); if(!el) return;
+  el.innerHTML = brandBarHTML(fProjBrand, 'toggleProjBrand');
+}
+
+function refreshProjTable(){
+  const filtered = allProjects.filter(p => matchProject(p, fProjBrand, fProjStandard));
+  const has = fProjBrand || fProjStandard;
+
+  const cl = document.getElementById('proj-clear'); if(cl) cl.style.display = has ? '' : 'none';
+  const ct = document.getElementById('proj-count'); if(ct) ct.textContent = `${filtered.length} de ${allProjects.length} projeto${allProjects.length!==1?'s':''}`;
+  const sb = document.getElementById('proj-sub');   if(sb) sb.textContent = `${allProjects.length} projeto${allProjects.length!==1?'s':''} cadastrado${allProjects.length!==1?'s':''}`;
+
+  const rows = filtered.length
+    ? filtered.map(p=>`
+      <tr onclick="showView('project-detail','${p.id}')">
+        <td><div class="td-name">${esc(p.name)}</div>${p.description?`<div class="td-sub">${esc(p.description)}</div>`:''}</td>
+        <td>${brandBadge(p.brand)}</td>
+        <td>${esc(p.standard)}</td>
+        <td>${countBudgets(p.id)} orçamento${countBudgets(p.id)!==1?'s':''}</td>
+        <td>${fmtDatetime(p.created_at)}</td>
+        <td onclick="event.stopPropagation()"><div class="td-actions">
+          <button class="btn-icon edit" title="Editar" onclick="openEditProject('${p.id}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn-icon del" title="Excluir" onclick="confirmDeleteProject('${p.id}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div></td>
+      </tr>`).join('')
+    : `<tr><td colspan="6" class="no-data">${has?'Nenhum projeto encontrado com estes filtros.':'Nenhum projeto cadastrado ainda.'}</td></tr>`;
+
+  const tb = document.getElementById('proj-tbody'); if(tb) tb.innerHTML = rows;
+}
+
+function toggleProjBrand(b){ fProjBrand = (fProjBrand===b)?'':b; refreshProjBrandBtns(); refreshProjTable(); }
+function clearProjFilters(){ fProjBrand=''; fProjStandard=''; const i=document.getElementById('proj-std-inp'); if(i)i.value=''; refreshProjBrandBtns(); refreshProjTable(); }
+
+/* ══════════════════════════════
+   DETAIL VIEW
+══════════════════════════════ */
+function renderDetailView(){
+  if(!currentProject) return;
+  const p = currentProject;
+  const el = document.getElementById('main-content');
+  const pBudgets = allBudgets.filter(b => b.project_id===p.id);
+  const filtered = fBudgetText ? pBudgets.filter(b=>matchBudget(b,fBudgetText)) : pBudgets;
+
+  const rows = filtered.length
+    ? filtered.map(b=>`
+      <tr>
+        <td><div class="pdf-cell">${pdfThumb()}<div><div class="td-name">${highlight(b.title,fBudgetText)}</div><div class="td-sub">${esc(b.file_name)}</div></div></div></td>
+        <td>${fmtDate(b.date)}</td>
+        <td><span style="color:var(--muted);font-size:13px;max-width:200px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(b.obs||'')}">${b.obs?highlight(b.obs,fBudgetText):'—'}</span></td>
+        <td>${fmtDatetime(b.created_at)}</td>
+        <td><div class="td-actions">
+          <button class="btn-icon view-ic" title="Visualizar" onclick="viewPDF('${b.id}','${esc(b.title).replace(/'/g,"\\'")}','${esc(b.file_name).replace(/'/g,"\\'")}','${b.file_path}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <button class="btn-icon view-ic" title="Baixar" onclick="downloadPDF('${b.file_path}','${esc(b.file_name).replace(/'/g,"\\'")}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>
+          <button class="btn-icon edit" title="Editar" onclick="openEditBudget('${b.id}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn-icon del" title="Excluir" onclick="confirmDeleteBudget('${b.id}','${esc(b.title).replace(/'/g,"\\'")}','${b.file_path}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div></td>
+      </tr>`).join('')
+    : `<tr><td colspan="5" class="no-data">${fBudgetText?`Nenhum resultado para "<strong>${esc(fBudgetText)}</strong>"`:' Nenhum orçamento adicionado ainda.'}</td></tr>`;
+
+  el.innerHTML = `
+    <div class="breadcrumb"><a href="#" onclick="showView('projects');return false;">Projetos</a><span>›</span><span>${esc(p.name)}</span></div>
+    <div class="detail-banner" data-brand="${p.brand}">
+      <div>
+        <h2>${esc(p.name)}</h2>
+        <div class="detail-meta">${brandBadge(p.brand)}<div class="detail-meta-item"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Padrão: <strong style="color:var(--text)">${esc(p.standard)}</strong></div>${p.description?`<div class="detail-meta-item">${esc(p.description)}</div>`:''}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="openEditProject('${p.id}')"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
+        <button class="btn btn-red btn-sm" onclick="openAddBudget()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>+ Orçamento</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div class="inline-search-box">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="budget-filter-inp" placeholder="Filtrar por título ou observação…" value="${esc(fBudgetText)}"/>
+      </div>
+      <span style="font-size:12px;color:var(--muted);">${filtered.length} de ${pBudgets.length} orçamento${pBudgets.length!==1?'s':''}</span>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Título / Arquivo</th><th>Data</th><th>Observações</th><th>Adicionado em</th><th>Ações</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+
+  const inp = document.getElementById('budget-filter-inp');
+  inp.addEventListener('input', function(){
+    fBudgetText = this.value;
+    renderDetailView();
+    const i2 = document.getElementById('budget-filter-inp');
+    if(i2){ i2.focus(); i2.setSelectionRange(i2.value.length, i2.value.length); }
+  });
+}
+
+/* ══════════════════════════════
+   SEARCH VIEW
+══════════════════════════════ */
+function renderSearchView(query){
+  const el = document.getElementById('main-content');
+  const q  = query.trim();
+
+  el.innerHTML = `
+    <div class="breadcrumb"><a href="#" onclick="showView('projects');return false;">Projetos</a><span>›</span><span>Pesquisa</span></div>
+    <div class="search-banner">
+      <h2>Resultados da Pesquisa</h2>
+      <div class="search-big-wrap">
+        <svg class="ico-big" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="srch-q-inp" placeholder="Refinar pesquisa…" value="${esc(q)}" autocomplete="off"/>
+      </div>
+    </div>
+    <div class="filters-bar">
+      <span class="brand-lbl">Marca:</span>
+      <div id="srch-brand-btns"></div>
+      <div class="filters-divider"></div>
+      <div class="standard-wrap">
+        <svg class="ico-std" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <input type="text" id="srch-std-inp" placeholder="Padrão de acabamento…"/>
+      </div>
+      <a class="clear-filters" id="srch-clear" href="#" style="display:none" onclick="clearSrchFilters();return false;">Limpar filtros</a>
+      <span class="filter-count" id="srch-count"></span>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Título / Arquivo</th><th>Data</th><th>Observações</th><th>Projeto</th><th>Ações</th></tr></thead>
+      <tbody id="srch-tbody"></tbody>
+    </table></div>`;
+
+  const stdInp = document.getElementById('srch-std-inp');
+  stdInp.value = fSrchStandard;
+  stdInp.addEventListener('input', function(){ fSrchStandard=this.value; refreshSrchTable(); });
+
+  document.getElementById('srch-q-inp').addEventListener('input', function(){
+    currentSearchQ = this.value.trim(); refreshSrchTable();
+  });
+
+  refreshSrchBrandBtns();
+  refreshSrchTable();
+
+  const qi = document.getElementById('srch-q-inp');
+  qi.focus(); qi.setSelectionRange(qi.value.length, qi.value.length);
+}
+
+function refreshSrchBrandBtns(){
+  const el = document.getElementById('srch-brand-btns'); if(!el) return;
+  el.innerHTML = brandBarHTML(fSrchBrand, 'toggleSrchBrand');
+}
+
+function refreshSrchTable(){
+  const q = currentSearchQ;
+  const results = allBudgets.filter(b => {
+    if(!matchBudget(b,q)) return false;
+    const proj = allProjects.find(p=>p.id===b.project_id);
+    if(fSrchBrand && proj?.brand!==fSrchBrand) return false;
+    if(fSrchStandard && !proj?.standard.toLowerCase().includes(fSrchStandard.toLowerCase())) return false;
+    return true;
+  });
+  const has = fSrchBrand || fSrchStandard;
+  const cl = document.getElementById('srch-clear'); if(cl) cl.style.display = has?'':'none';
+  const ct = document.getElementById('srch-count'); if(ct) ct.textContent = `${results.length} resultado${results.length!==1?'s':''}`;
+
+  const rows = results.length
+    ? results.map(b=>{
+        const proj = allProjects.find(p=>p.id===b.project_id);
+        return`<tr>
+          <td><div class="pdf-cell">${pdfThumb()}<div><div class="td-name">${highlight(b.title,q)}</div><div class="td-sub">${esc(b.file_name)}</div></div></div></td>
+          <td>${fmtDate(b.date)}</td>
+          <td><span style="color:var(--muted);font-size:13px;">${b.obs?highlight(b.obs,q):'—'}</span></td>
+          <td><span class="result-chip" onclick="showView('project-detail','${b.project_id}')">${proj?brandBadge(proj.brand):''}${esc(proj?.name||'—')}</span></td>
+          <td><div class="td-actions">
+            <button class="btn-icon view-ic" title="Visualizar" onclick="viewPDF('${b.id}','${esc(b.title).replace(/'/g,"\\'")}','${esc(b.file_name).replace(/'/g,"\\'")}','${b.file_path}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button class="btn-icon view-ic" title="Baixar" onclick="downloadPDF('${b.file_path}','${esc(b.file_name).replace(/'/g,"\\'")}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>
+            <button class="btn-icon" title="Ir ao projeto" onclick="showView('project-detail','${b.project_id}')"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+          </div></td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="5" class="no-data">${q||has?'Nenhum resultado encontrado.':'Digite algo para pesquisar.'}</td></tr>`;
+
+  const tb = document.getElementById('srch-tbody'); if(tb) tb.innerHTML = rows;
+}
+
+function toggleSrchBrand(b){ fSrchBrand=(fSrchBrand===b)?'':b; refreshSrchBrandBtns(); refreshSrchTable(); }
+function clearSrchFilters(){ fSrchBrand=''; fSrchStandard=''; const i=document.getElementById('srch-std-inp'); if(i)i.value=''; refreshSrchBrandBtns(); refreshSrchTable(); }
+
+/* ── PROJECT CRUD ── */
+function openNewProject(){
+  document.getElementById('modal-project-title').textContent='Novo Projeto';
+  ['project-edit-id','project-name','project-standard','project-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('project-brand').value='';
+  openModal('modal-project');
+}
+function openEditProject(id){
+  const p=allProjects.find(x=>x.id===id); if(!p)return;
+  document.getElementById('modal-project-title').textContent='Editar Projeto';
+  document.getElementById('project-edit-id').value=p.id;
+  document.getElementById('project-name').value=p.name;
+  document.getElementById('project-brand').value=p.brand;
+  document.getElementById('project-standard').value=p.standard;
+  document.getElementById('project-desc').value=p.description||'';
+  openModal('modal-project');
+}
+async function saveProject(){
+  const name=document.getElementById('project-name').value.trim();
+  const brand=document.getElementById('project-brand').value;
+  const standard=document.getElementById('project-standard').value.trim();
+  const description=document.getElementById('project-desc').value.trim();
+  const editId=document.getElementById('project-edit-id').value;
+  if(!name){toast('Informe o nome do projeto.','error');return;}
+  if(!brand){toast('Selecione a marca.','error');return;}
+  if(!standard){toast('Informe o padrão de acabamento.','error');return;}
+  showLoading(editId?'Atualizando…':'Criando…');
+  try{
+    if(editId){
+      const{error}=await db.from('projects').update({name,brand,standard,description}).eq('id',editId);
+      if(error)throw error;
+      const idx=allProjects.findIndex(p=>p.id===editId);
+      if(idx>-1)allProjects[idx]={...allProjects[idx],name,brand,standard,description};
+      if(currentProject?.id===editId)currentProject=allProjects[idx];
+      toast('Projeto atualizado!');
+    }else{
+      const{data,error}=await db.from('projects').insert({name,brand,standard,description,created_by:currentUser.id}).select().single();
+      if(error)throw error; allProjects.unshift(data); toast('Projeto criado!');
+    }
+    closeModal('modal-project');
+    if(currentView==='projects')renderProjectsView();
+    else if(currentView==='project-detail')renderDetailView();
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();}
+}
+function confirmDeleteProject(id){
+  const p=allProjects.find(x=>x.id===id);
+  document.getElementById('confirm-message').innerHTML=`Excluir o projeto <strong>${esc(p?.name)}</strong>? Todos os orçamentos vinculados também serão removidos.`;
+  document.getElementById('confirm-action-btn').onclick=()=>deleteProject(id);
+  openModal('modal-confirm');
+}
+async function deleteProject(id){
+  showLoading('Excluindo…');
+  try{
+    const toDelete=allBudgets.filter(b=>b.project_id===id);
+    for(const b of toDelete){try{await db.storage.from(BUCKET).remove([b.file_path]);}catch(e){}}
+    const{error}=await db.from('projects').delete().eq('id',id);
+    if(error)throw error;
+    allBudgets=allBudgets.filter(b=>b.project_id!==id);
+    allProjects=allProjects.filter(p=>p.id!==id);
+    closeModal('modal-confirm'); toast('Projeto excluído.'); showView('projects');
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();}
+}
+
+/* ── BUDGET CRUD ── */
+function openAddBudget(){
+  document.getElementById('modal-budget-title').textContent='Adicionar Orçamento';
+  document.getElementById('budget-edit-id').value='';
+  document.getElementById('budget-title').value='';
+  document.getElementById('budget-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('budget-obs').value='';
+  document.getElementById('file-name-display').textContent='';
+  document.getElementById('budget-file').value='';
+  document.getElementById('pdf-label').textContent='Arquivo PDF *';
+  document.getElementById('current-file-wrap').style.display='none';
+  document.getElementById('file-drop-text').textContent='Clique ou arraste um PDF aqui';
+  selectedFile=null; openModal('modal-budget');
+}
+function openEditBudget(id){
+  const b=allBudgets.find(x=>x.id===id); if(!b)return;
+  document.getElementById('modal-budget-title').textContent='Editar Orçamento';
+  document.getElementById('budget-edit-id').value=b.id;
+  document.getElementById('budget-title').value=b.title;
+  document.getElementById('budget-date').value=b.date;
+  document.getElementById('budget-obs').value=b.obs||'';
+  document.getElementById('file-name-display').textContent='';
+  document.getElementById('budget-file').value='';
+  document.getElementById('pdf-label').textContent='Substituir PDF (opcional)';
+  document.getElementById('current-file-name').textContent=b.file_name;
+  document.getElementById('current-file-wrap').style.display='flex';
+  document.getElementById('file-drop-text').textContent='Arraste um novo PDF para substituir';
+  selectedFile=null; openModal('modal-budget');
+}
+function handleFileSelect(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.type!=='application/pdf'){toast('Selecione um arquivo PDF.','error');return;}
+  selectedFile=file; document.getElementById('file-name-display').textContent='✓ '+file.name;
+}
+const dropZone=document.getElementById('file-drop-zone');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{
+  e.preventDefault();dropZone.classList.remove('drag-over');
+  const file=e.dataTransfer.files[0];
+  if(!file||file.type!=='application/pdf'){toast('Arraste um arquivo PDF.','error');return;}
+  selectedFile=file;document.getElementById('file-name-display').textContent='✓ '+file.name;
+});
+async function saveBudget(){
+  const title=document.getElementById('budget-title').value.trim();
+  const date=document.getElementById('budget-date').value;
+  const obs=document.getElementById('budget-obs').value.trim();
+  const editId=document.getElementById('budget-edit-id').value;
+  if(!title){toast('Informe o título.','error');return;}
+  if(!date){toast('Informe a data.','error');return;}
+  if(!editId&&!selectedFile){toast('Selecione um arquivo PDF.','error');return;}
+  showLoading(editId?'Atualizando…':'Salvando…');
+  try{
+    if(editId){
+      let ud={title,date,obs};
+      if(selectedFile){
+        const ob=allBudgets.find(b=>b.id===editId);
+        const ext=selectedFile.name.split('.').pop();
+        const path=`${currentProject?.id||ob?.project_id}/${editId}_${Date.now()}.${ext}`;
+        const{error:ue}=await db.storage.from(BUCKET).upload(path,selectedFile,{upsert:true});
+        if(ue)throw ue;
+        if(ob?.file_path){try{await db.storage.from(BUCKET).remove([ob.file_path]);}catch(e){}}
+        ud={...ud,file_name:selectedFile.name,file_path:path};
+      }
+      const{error}=await db.from('budgets').update(ud).eq('id',editId);
+      if(error)throw error;
+      const idx=allBudgets.findIndex(b=>b.id===editId);
+      if(idx>-1)allBudgets[idx]={...allBudgets[idx],...ud};
+      toast('Orçamento atualizado!');
+    }else{
+      const ext=selectedFile.name.split('.').pop();
+      const tid=crypto.randomUUID();
+      const path=`${currentProject.id}/${tid}.${ext}`;
+      const{error:ue}=await db.storage.from(BUCKET).upload(path,selectedFile);
+      if(ue)throw ue;
+      const{data,error}=await db.from('budgets').insert({project_id:currentProject.id,title,date,obs,file_name:selectedFile.name,file_path:path,created_by:currentUser.id}).select().single();
+      if(error)throw error; allBudgets.unshift(data); toast('Orçamento adicionado!');
+    }
+    closeModal('modal-budget');
+    if(currentView==='project-detail')renderDetailView();
+    else if(currentView==='search')renderSearchView(currentSearchQ);
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();}
+}
+function confirmDeleteBudget(id,title,filePath){
+  document.getElementById('confirm-message').innerHTML=`Excluir o orçamento <strong>${esc(title)}</strong>? O arquivo PDF também será removido.`;
+  document.getElementById('confirm-action-btn').onclick=()=>deleteBudget(id,filePath);
+  openModal('modal-confirm');
+}
+async function deleteBudget(id,filePath){
+  showLoading('Excluindo…');
+  try{
+    if(filePath){try{await db.storage.from(BUCKET).remove([filePath]);}catch(e){}}
+    const{error}=await db.from('budgets').delete().eq('id',id);
+    if(error)throw error;
+    allBudgets=allBudgets.filter(b=>b.id!==id);
+    closeModal('modal-confirm'); toast('Orçamento excluído.');
+    if(currentView==='project-detail')renderDetailView();
+    else if(currentView==='search')renderSearchView(currentSearchQ);
+  }catch(e){toast('Erro: '+e.message,'error');}
+  finally{hideLoading();}
+}
+
+/* ── PDF ── */
+async function viewPDF(id,title,filename,filePath){
+  showLoading('Carregando PDF…');
+  try{
+    const{data,error}=await db.storage.from(BUCKET).download(filePath);
+    if(error)throw error;
+    if(currentPdfUrl){URL.revokeObjectURL(currentPdfUrl);currentPdfUrl=null;}
+    currentPdfUrl=URL.createObjectURL(data);
+    document.getElementById('pdf-modal-title').textContent=title||filename;
+    document.getElementById('pdf-frame').src=currentPdfUrl;
+    document.getElementById('pdf-download-btn').onclick=()=>triggerDownload(currentPdfUrl,filename);
+    openModal('modal-pdf');
+  }catch(e){toast('Erro ao carregar PDF: '+e.message,'error');}
+  finally{hideLoading();}
+}
+async function downloadPDF(filePath,filename){
+  showLoading('Preparando download…');
+  try{
+    const{data,error}=await db.storage.from(BUCKET).download(filePath);
+    if(error)throw error;
+    const url=URL.createObjectURL(data); triggerDownload(url,filename);
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }catch(e){toast('Erro ao baixar: '+e.message,'error');}
+  finally{hideLoading();}
+}
+function triggerDownload(url,name){const a=document.createElement('a');a.href=url;a.download=name||'orcamento.pdf';a.click();}
+function closePdfModal(){closeModal('modal-pdf');document.getElementById('pdf-frame').src='';if(currentPdfUrl){URL.revokeObjectURL(currentPdfUrl);currentPdfUrl=null;}}
+
+/* ── ✅ INIT CORRIGIDO ── */
+db.auth.getSession().then(({ data: { session } }) => {
+  if (session) { currentUser = session.user; showApp(); }
+  else { showLoginScreen(); }
+});
+</script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    
